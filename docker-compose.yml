@@ -12,5 +12,11 @@ services:
     volumes:
       - patika_clone_data:/var/lib/postgresql/data
 
+  adminer:
+    image: adminer
+    container_name: patika-clone-adminer
+    restart: always
+    ports:
+      - "8081:8080"
 volumes:
   patika_clone_data:
