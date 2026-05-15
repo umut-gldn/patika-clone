@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.umutgldn.patikaclone.common.exception.BusinessException;
+import com.umutgldn.patikaclone.common.security.JwtService;
 import com.umutgldn.patikaclone.auth.dto.AuthResponse;
 import com.umutgldn.patikaclone.auth.dto.LoginRequest;
 import com.umutgldn.patikaclone.auth.dto.RegisterRequest;
@@ -19,6 +20,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
     @Override
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -29,10 +32,11 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.STUDENT);
+        String token=jwtService.generateToken(user);
 
         userRepository.save(user);
 
-        return new AuthResponse("Kayıt Başarılı");
+        return new AuthResponse(token,"Bearer");
     }
 
     @Override
@@ -42,7 +46,8 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new BusinessException("Şifre hatalı");
         }
-        return new AuthResponse("Giriş Başarılı");
+        String token=jwtService.generateToken(user);
+        return new AuthResponse(token,"Bearer");
     }
 
 }
