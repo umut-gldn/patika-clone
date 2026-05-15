@@ -1,16 +1,17 @@
 package com.umutgldn.patikaclone.content.service;
 
 import com.umutgldn.patikaclone.common.exception.BusinessException;
+import com.umutgldn.patikaclone.common.security.CurrentUserService;
 import com.umutgldn.patikaclone.content.dto.ContentResponse;
 import com.umutgldn.patikaclone.content.dto.ContentSaveRequest;
 import com.umutgldn.patikaclone.content.entity.Content;
 import com.umutgldn.patikaclone.content.repository.ContentRepository;
 import com.umutgldn.patikaclone.course.entity.Course;
 import com.umutgldn.patikaclone.course.repository.CourseRepository;
+import com.umutgldn.patikaclone.enrollment.repository.EnrollmentRepository;
 import com.umutgldn.patikaclone.user.entity.User;
 import com.umutgldn.patikaclone.user.enums.Role;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,10 +22,12 @@ public class ContentServiceImpl implements ContentService {
 
     private final ContentRepository contentRepository;
     private final CourseRepository courseRepository;
+    private final CurrentUserService currentUserService;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     public ContentResponse create(ContentSaveRequest request) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.getCurrentUser();
         Course course = findCourseById(request.courseId());
 
         validateInstructorCanManageCourse(currentUser, course);
@@ -68,7 +71,7 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public ContentResponse update(Long id, ContentSaveRequest request) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.getCurrentUser();
         Content content = findContentById(id);
         Course course = findCourseById(request.courseId());
 
@@ -87,7 +90,7 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public void delete(Long id) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.getCurrentUser();
         Content content = findContentById(id);
 
         validateContentOwnerOrOperator(currentUser, content);
@@ -95,16 +98,26 @@ public class ContentServiceImpl implements ContentService {
         contentRepository.delete(content);
     }
 
-    private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
+    @Override
+    public List<ContentResponse> getContentsForEnrolledCourse(Long courseId) {
+        User currentUser = currentUserService.getCurrentUser();
 
-        if (!(principal instanceof User user)) {
-            throw new BusinessException("Kullanıcı bilgisi alınamadı");
+        if (currentUser.getRole() != Role.STUDENT) {
+            throw new BusinessException("Bu işlem sadece öğrenciler tarafından yapılabilir");
         }
 
-        return user;
+        boolean enrolled = enrollmentRepository.existsByStudentIdAndCourseId(
+                currentUser.getId(),
+                courseId);
+
+        if (!enrolled) {
+            throw new BusinessException("Bu eğitime kayıtlı değilsiniz");
+        }
+
+        return contentRepository.findByCourseId(courseId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private Course findCourseById(Long id) {
@@ -150,7 +163,6 @@ public class ContentServiceImpl implements ContentService {
                 content.getCourse().getId(),
                 content.getCourse().getName(),
                 content.getInstructor().getId(),
-                content.getInstructor().getFullName()
-        );
+                content.getInstructor().getFullName());
     }
 }

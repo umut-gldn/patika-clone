@@ -16,4 +16,6 @@ public interface ContentService {
     ContentResponse update(Long id, ContentSaveRequest request);
 
     void delete(Long id);
+
+    List<ContentResponse> getContentsForEnrolledCourse(Long courseId);
 }

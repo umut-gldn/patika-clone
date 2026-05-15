@@ -28,8 +28,7 @@ public class ContentController {
     @GetMapping
     public List<ContentResponse> getAll(
             @RequestParam(required = false) Long courseId,
-            @RequestParam(required = false) String title
-    ) {
+            @RequestParam(required = false) String title) {
         return contentService.getAll(courseId, title);
     }
 
@@ -42,8 +41,7 @@ public class ContentController {
     @PreAuthorize("hasAnyRole('OPERATOR', 'INSTRUCTOR')")
     public ContentResponse update(
             @PathVariable Long id,
-            @RequestBody @Valid ContentSaveRequest request
-    ) {
+            @RequestBody @Valid ContentSaveRequest request) {
         return contentService.update(id, request);
     }
 
@@ -52,5 +50,12 @@ public class ContentController {
     @PreAuthorize("hasAnyRole('OPERATOR', 'INSTRUCTOR')")
     public void delete(@PathVariable Long id) {
         contentService.delete(id);
+    }
+
+    @GetMapping("/my-courses/{courseId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<ContentResponse> getContentsForEnrolledCourse(
+            @PathVariable Long courseId) {
+        return contentService.getContentsForEnrolledCourse(courseId);
     }
 }
