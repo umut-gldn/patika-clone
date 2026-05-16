@@ -12,6 +12,9 @@ import com.umutgldn.patikaclone.enrollment.repository.EnrollmentRepository;
 import com.umutgldn.patikaclone.user.entity.User;
 import com.umutgldn.patikaclone.user.enums.Role;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,22 +48,20 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public List<ContentResponse> getAll(Long courseId, String title) {
-        List<Content> contents;
+    public Page<ContentResponse> getAll(Long courseId, String title, Pageable pageable) {
+        Page<Content> contents;
 
         if (courseId != null && title != null && !title.isBlank()) {
-            contents = contentRepository.findByCourseIdAndTitleContainingIgnoreCase(courseId, title);
+            contents = contentRepository.findByCourseIdAndTitleContainingIgnoreCase(courseId, title, pageable);
         } else if (courseId != null) {
-            contents = contentRepository.findByCourseId(courseId);
+            contents = contentRepository.findByCourseId(courseId, pageable);
         } else if (title != null && !title.isBlank()) {
-            contents = contentRepository.findByTitleContainingIgnoreCase(title);
+            contents = contentRepository.findByTitleContainingIgnoreCase(title, pageable);
         } else {
-            contents = contentRepository.findAll();
+            contents = contentRepository.findAll(pageable);
         }
 
-        return contents.stream()
-                .map(this::toResponse)
-                .toList();
+        return contents.map(this::toResponse);
     }
 
     @Override

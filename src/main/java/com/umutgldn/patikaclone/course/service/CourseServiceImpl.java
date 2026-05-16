@@ -2,6 +2,8 @@ package com.umutgldn.patikaclone.course.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.umutgldn.patikaclone.common.exception.BusinessException;
@@ -46,28 +48,27 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseResponse> getAll() {
-        return courseRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<CourseResponse> getAll(Pageable pageable) {
+        return courseRepository.findAll(pageable)
+                .map(this::toResponse);
     }
 
     @Override
     public CourseResponse getById(Long id) {
-       Course course = findCourseById(id);
-       return toResponse(course);
+        Course course = findCourseById(id);
+        return toResponse(course);
     }
 
     @Override
     public CourseResponse update(Long id, CourseSaveRequest request) {
-        Course course=findCourseById(id);
+        Course course = findCourseById(id);
 
-        if(!course.getName().equalsIgnoreCase(request.name())&& courseRepository.existsByNameIgnoreCase(request.name())){
+        if (!course.getName().equalsIgnoreCase(request.name())
+                && courseRepository.existsByNameIgnoreCase(request.name())) {
             throw new BusinessException("Bu eğitim zaten mevcut");
         }
-        Path path=findPathById(request.pathId());
-        User instructor=findInstructorById(request.instructorId());
+        Path path = findPathById(request.pathId());
+        User instructor = findInstructorById(request.instructorId());
 
         course.setName(request.name());
         course.setDescription(request.description());

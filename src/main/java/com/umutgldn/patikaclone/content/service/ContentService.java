@@ -5,11 +5,14 @@ import com.umutgldn.patikaclone.content.dto.ContentSaveRequest;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface ContentService {
 
     ContentResponse create(ContentSaveRequest request);
 
-    List<ContentResponse> getAll(Long courseId, String title);
+   Page<ContentResponse> getAll(Long courseId, String title, Pageable pageable);
 
     ContentResponse getById(Long id);
 

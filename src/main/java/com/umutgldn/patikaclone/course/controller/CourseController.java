@@ -2,6 +2,8 @@ package com.umutgldn.patikaclone.course.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +18,10 @@ import com.umutgldn.patikaclone.course.dto.CourseResponse;
 import com.umutgldn.patikaclone.course.dto.CourseSaveRequest;
 import com.umutgldn.patikaclone.course.service.CourseService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;
-
-
 
 @RestController
 @RequestMapping("/api/v1/courses")
@@ -29,15 +30,17 @@ public class CourseController {
 
     private final CourseService courseService;
 
+    @Operation(summary = "Yeni eğitim oluştur")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CourseResponse create(@RequestBody @Valid CourseSaveRequest request){
+    public CourseResponse create(@RequestBody @Valid CourseSaveRequest request) {
         return courseService.create(request);
     }
 
+    @Operation(summary = "Tüm eğitimleri listele")
     @GetMapping
-    public List<CourseResponse> getAll(){
-        return courseService.getAll();
+    public Page<CourseResponse> getAll(Pageable pageable) {
+        return courseService.getAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -55,6 +58,5 @@ public class CourseController {
     public void delete(@PathVariable Long id) {
         courseService.delete(id);
     }
-    
 
 }

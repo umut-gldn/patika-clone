@@ -5,6 +5,9 @@ import com.umutgldn.patikaclone.content.dto.ContentSaveRequest;
 import com.umutgldn.patikaclone.content.service.ContentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +29,11 @@ public class ContentController {
     }
 
     @GetMapping
-    public List<ContentResponse> getAll(
+    public Page<ContentResponse> getAll(
             @RequestParam(required = false) Long courseId,
-            @RequestParam(required = false) String title) {
-        return contentService.getAll(courseId, title);
+            @RequestParam(required = false) String title,
+            Pageable pageable) {
+        return contentService.getAll(courseId, title, pageable);
     }
 
     @GetMapping("/{id}")
